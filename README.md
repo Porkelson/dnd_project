@@ -53,8 +53,8 @@ A beginner-friendly D&D experience that focuses on storytelling and adventure ra
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/dnd-adventure-companion.git
-cd dnd-adventure-companion
+git clone https://github.com/Porkelson/dnd_project.git
+cd dnd-chat-new
 ```
 
 2. Install dependencies
@@ -103,7 +103,7 @@ src/
 ### Phase 1: Foundation (Current)
 - [x] Basic character creation
 - [x] Spell book implementation
-- [ ] Character persistence
+- [x] Character persistence
 - [ ] Basic adventure structure
 
 ### Phase 2: AI DM Integration
