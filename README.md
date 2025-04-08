@@ -104,7 +104,7 @@ src/
 - [x] Basic character creation
 - [x] Spell book implementation
 - [x] Character persistence
-- [ ] Basic adventure structure
+- [x] Basic adventure structure
 
 ### Phase 2: AI DM Integration
 - [ ] OpenAI API integration
