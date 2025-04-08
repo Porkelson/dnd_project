@@ -1,17 +1,28 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Button, Text } from 'react-native-paper';
+import { Button, Text, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';
+import { signOutUser } from '../services/authService';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const theme = useTheme();
 
-  const navigateToCharacterCreation = () => {
-    navigation.navigate('CharacterCreation', {});
+  const handlePlay = () => {
+    navigation.navigate('Campaign');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOutUser();
+      // Navigation will be handled by the auth state listener in App.tsx
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   return (
@@ -22,56 +33,22 @@ export const HomeScreen = () => {
       <View style={styles.buttonContainer}>
         <Button
           mode="contained"
-          onPress={() => navigation.navigate('CharacterList')}
-          style={styles.button}
+          onPress={handlePlay}
+          style={[styles.button, { backgroundColor: theme.colors.primary }]}
           labelStyle={styles.buttonText}
+          icon="play"
         >
-          View Characters
-        </Button>
-        
-        <Button
-          mode="contained"
-          onPress={navigateToCharacterCreation}
-          style={styles.button}
-          labelStyle={styles.buttonText}
-        >
-          Create Character
-        </Button>
-        
-        <Button
-          mode="contained"
-          onPress={() => navigation.navigate('Campaign')}
-          style={styles.button}
-          labelStyle={styles.buttonText}
-        >
-          Campaigns
-        </Button>
-        
-        <Button
-          mode="contained"
-          onPress={() => navigation.navigate('Gameplay')}
-          style={styles.button}
-          labelStyle={styles.buttonText}
-        >
-          Gameplay Tools
+          Play
         </Button>
         
         <Button
           mode="outlined"
-          onPress={() => navigation.navigate('Login')}
-          style={[styles.button, styles.outlinedButton]}
-          labelStyle={styles.buttonText}
+          onPress={handleLogout}
+          style={[styles.button, { borderColor: theme.colors.error }]}
+          labelStyle={[styles.buttonText, { color: theme.colors.error }]}
+          icon="logout"
         >
-          Login
-        </Button>
-        
-        <Button
-          mode="outlined"
-          onPress={() => navigation.navigate('Register')}
-          style={[styles.button, styles.outlinedButton]}
-          labelStyle={styles.buttonText}
-        >
-          Register
+          Logout
         </Button>
       </View>
     </View>
@@ -87,32 +64,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#ffffff',
     marginBottom: 10,
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#ffffff',
-    marginBottom: 30,
+    marginBottom: 50,
+    textAlign: 'center',
   },
   buttonContainer: {
     width: '100%',
     maxWidth: 300,
   },
   button: {
-    marginVertical: 10,
-    backgroundColor: '#4a4a9c',
+    marginBottom: 20,
     paddingVertical: 8,
   },
   buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-  },
-  outlinedButton: {
-    backgroundColor: 'transparent',
-    borderColor: '#4a4a9c',
   },
 }); 
