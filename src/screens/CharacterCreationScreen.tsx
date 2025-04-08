@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView, Alert } from 'react-native';
 import { Text, TextInput, Button, SegmentedButtons, Divider, Menu, Portal, Modal } from 'react-native-paper';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { dndApi, ApiReference, Race, Class } from '../services/dndApi';
+import { createCharacter } from '../services/characterService';
 
 type CharacterCreationScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type CharacterCreationScreenRouteProp = RouteProp<RootStackParamList, 'CharacterCreation'>;
@@ -49,6 +50,7 @@ export const CharacterCreationScreen: React.FC<CharacterCreationScreenProps> = (
   const characterId = route.params?.characterId;
   
   // Character basic info
+  const [loading, setLoading] = useState(false);
   const [name, setName] = useState('');
   const [race, setRace] = useState('');
   const [characterClass, setCharacterClass] = useState('');
@@ -190,12 +192,22 @@ export const CharacterCreationScreen: React.FC<CharacterCreationScreenProps> = (
     }
   };
 
-  const handleCreateCharacter = () => {
-    const character = {
-      id: characterId || Date.now().toString(), // Generate a new ID if creating a new character
+  const handleCreateCharacter = async () => {
+    if (!name) {
+      Alert.alert('Error', 'Please enter a character name');
+      return;
+    }
+
+    if (!selectedRaceDetails || !selectedClassDetails) {
+      Alert.alert('Error', 'Please select both a race and a class');
+      return;
+    }
+
+    const characterData = {
+      id: Date.now().toString(),
       name,
-      race: selectedRaceDetails,
-      class: selectedClassDetails,
+      race: selectedRaceDetails?.index || '',
+      class: selectedClassDetails?.index || '',
       level: parseInt(level, 10),
       abilityScores: {
         strength: parseInt(strength, 10),
@@ -209,10 +221,39 @@ export const CharacterCreationScreen: React.FC<CharacterCreationScreenProps> = (
       raceDetails: selectedRaceDetails,
       classDetails: selectedClassDetails,
     };
-    
-    console.log('Character saved:', character);
-    onCharacterCreated?.(character);
-    navigation.navigate('CharacterList');
+
+    try {
+      setLoading(true);
+      const savedCharacter = await createCharacter(characterData);
+      console.log('Character saved:', savedCharacter);
+      
+      if (savedCharacter.id) {
+        const characterId = savedCharacter.id;
+        Alert.alert(
+          'Success', 
+          'Character created successfully!',
+          [
+            {
+              text: 'View Character',
+              onPress: () => navigation.navigate('CharacterDetail', { characterId })
+            },
+            {
+              text: 'Create Another',
+              onPress: () => resetForm()
+            }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Error creating character:', error);
+      Alert.alert(
+        'Error', 
+        'Failed to create character. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setLoading(false);
+    }
   };
   
   return (

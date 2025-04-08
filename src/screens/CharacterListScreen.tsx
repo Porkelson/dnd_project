@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, FlatList, TouchableOpacity } from 'react-native';
-import { Text, Card, FAB, IconButton, Divider } from 'react-native-paper';
+import { StyleSheet, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { Text, Card, FAB, IconButton, Divider, Button } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';
+import { getCharacters, Character as ServiceCharacter } from '../services/characterService';
 
 type CharacterListScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -36,12 +37,43 @@ const MOCK_CHARACTERS: Character[] = [
 
 export const CharacterListScreen = () => {
   const navigation = useNavigation<CharacterListScreenNavigationProp>();
-  const [characters, setCharacters] = useState<Character[]>(MOCK_CHARACTERS);
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // In a real app, you would fetch characters from a database here
+  // Load characters when the screen is focused
   useEffect(() => {
-    // Fetch characters from storage/database
+    loadCharacters();
   }, []);
+
+  const loadCharacters = async () => {
+    try {
+      setLoading(true);
+      // In a real app, this would fetch from your database
+      const fetchedCharacters = await getCharacters();
+      // Convert service characters to our local Character type
+      const convertedCharacters: Character[] = fetchedCharacters.map(char => ({
+        id: char.id || '',
+        name: char.name,
+        race: typeof char.race === 'string' ? char.race : '',
+        class: typeof char.class === 'string' ? char.class : '',
+        level: char.level
+      }));
+      setCharacters(convertedCharacters);
+    } catch (error) {
+      console.error('Error loading characters:', error);
+      // Fallback to mock data if the API call fails
+      setCharacters(MOCK_CHARACTERS);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadCharacters();
+    setRefreshing(false);
+  };
 
   const renderCharacterItem = ({ item }: { item: Character }) => (
     <Card style={styles.characterCard} mode="outlined">
@@ -76,12 +108,35 @@ export const CharacterListScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text variant="headlineMedium" style={styles.title}>Your Characters</Text>
+      <View style={styles.header}>
+        <Text variant="headlineMedium" style={styles.title}>Your Characters</Text>
+        <Button 
+          mode="contained-tonal" 
+          icon="refresh" 
+          onPress={onRefresh}
+          loading={refreshing}
+          style={styles.refreshButton}
+        >
+          Refresh
+        </Button>
+      </View>
       
-      {characters.length === 0 ? (
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <Text>Loading characters...</Text>
+        </View>
+      ) : characters.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyStateText}>No characters yet</Text>
           <Text style={styles.emptyStateSubtext}>Create your first character to get started</Text>
+          <Button 
+            mode="contained" 
+            icon="plus" 
+            onPress={() => navigation.navigate('CharacterCreation', {})}
+            style={styles.createButton}
+          >
+            Create Character
+          </Button>
         </View>
       ) : (
         <FlatList
@@ -89,6 +144,14 @@ export const CharacterListScreen = () => {
           renderItem={renderCharacterItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#4a4a9c']}
+              tintColor="#4a4a9c"
+            />
+          }
         />
       )}
       
@@ -107,10 +170,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     padding: 20,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 16,
+  },
   title: {
     color: '#ffffff',
-    marginBottom: 20,
-    textAlign: 'center',
     fontWeight: 'bold',
   },
   listContent: {
@@ -164,6 +232,18 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
+    backgroundColor: '#4a4a9c',
+  },
+  refreshButton: {
+    borderRadius: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  createButton: {
+    marginTop: 16,
     backgroundColor: '#4a4a9c',
   },
 }); 
