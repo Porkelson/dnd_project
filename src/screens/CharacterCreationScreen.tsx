@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, Alert } from 'react-native';
-import { Text, TextInput, Button, SegmentedButtons, Divider, Menu, Portal, Modal } from 'react-native-paper';
+import { StyleSheet, View, ScrollView, Alert, Dimensions } from 'react-native';
+import { Text, TextInput, Button, SegmentedButtons, Divider, Menu, Portal, Modal, Surface, useTheme } from 'react-native-paper';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
@@ -48,6 +48,7 @@ export const CharacterCreationScreen: React.FC<CharacterCreationScreenProps> = (
   const navigation = useNavigation<CharacterCreationScreenNavigationProp>();
   const route = useRoute<CharacterCreationScreenRouteProp>();
   const characterId = route.params?.characterId;
+  const theme = useTheme();
   
   // Character basic info
   const [loading, setLoading] = useState(false);
@@ -257,233 +258,247 @@ export const CharacterCreationScreen: React.FC<CharacterCreationScreenProps> = (
   };
   
   return (
-    <ScrollView style={styles.container}>
-      <Text variant="headlineMedium" style={styles.title}>
-        Create Your Character
-      </Text>
-      
-      <View style={styles.section}>
-        <Text variant="titleMedium" style={styles.sectionTitle}>Basic Information</Text>
-        
-        <TextInput
-          label="Character Name"
-          value={name}
-          onChangeText={setName}
-          mode="outlined"
-          style={styles.input}
-          textColor="#000000"
-          outlineColor="#4a4a9c"
-        />
-        
-        <View style={styles.menuContainer}>
-          <Text style={styles.label}>Race</Text>
-          <Menu
-            visible={raceMenuVisible}
-            onDismiss={() => setRaceMenuVisible(false)}
-            anchor={
-              <Button
-                mode="outlined"
-                onPress={() => setRaceMenuVisible(true)}
-                style={styles.menuButton}
-                textColor="#ffffff"
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={styles.contentContainer}>
+        <Surface style={styles.formContainer}>
+          <Text variant="headlineMedium" style={[styles.title, { color: theme.colors.primary }]}>
+            Create Your Character
+          </Text>
+          
+          <View style={styles.section}>
+            <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Basic Information</Text>
+            
+            <TextInput
+              label="Character Name"
+              value={name}
+              onChangeText={setName}
+              mode="outlined"
+              style={styles.input}
+              textColor={theme.colors.onSurface}
+              outlineColor={theme.colors.primary}
+            />
+            
+            <View style={styles.menuContainer}>
+              <Text style={[styles.label, { color: theme.colors.onSurface }]}>Race</Text>
+              <Menu
+                visible={raceMenuVisible}
+                onDismiss={() => setRaceMenuVisible(false)}
+                anchor={
+                  <Button
+                    mode="outlined"
+                    onPress={() => setRaceMenuVisible(true)}
+                    style={[styles.menuButton, { borderColor: theme.colors.primary }]}
+                    textColor={theme.colors.onSurface}
+                  >
+                    {race || 'Select Race'}
+                  </Button>
+                }
+                contentStyle={[styles.menuContent, { backgroundColor: theme.colors.surface }]}
               >
-                {race || 'Select Race'}
-              </Button>
-            }
-            contentStyle={styles.menuContent}
-          >
-            {races.map((race) => (
-              <Menu.Item
-                key={race.index}
-                onPress={() => handleRaceSelect(race)}
-                title={race.name}
-                titleStyle={styles.menuItemText}
-              />
-            ))}
-          </Menu>
-        </View>
-        
-        <View style={styles.menuContainer}>
-          <Text style={styles.label}>Class</Text>
-          <Menu
-            visible={classMenuVisible}
-            onDismiss={() => setClassMenuVisible(false)}
-            anchor={
-              <Button
-                mode="outlined"
-                onPress={() => setClassMenuVisible(true)}
-                style={styles.menuButton}
-                textColor="#ffffff"
+                {races.map((race) => (
+                  <Menu.Item
+                    key={race.index}
+                    onPress={() => handleRaceSelect(race)}
+                    title={race.name}
+                    titleStyle={{ color: theme.colors.onSurface }}
+                  />
+                ))}
+              </Menu>
+            </View>
+            
+            <View style={styles.menuContainer}>
+              <Text style={[styles.label, { color: theme.colors.onSurface }]}>Class</Text>
+              <Menu
+                visible={classMenuVisible}
+                onDismiss={() => setClassMenuVisible(false)}
+                anchor={
+                  <Button
+                    mode="outlined"
+                    onPress={() => setClassMenuVisible(true)}
+                    style={[styles.menuButton, { borderColor: theme.colors.primary }]}
+                    textColor={theme.colors.onSurface}
+                  >
+                    {characterClass || 'Select Class'}
+                  </Button>
+                }
+                contentStyle={[styles.menuContent, { backgroundColor: theme.colors.surface }]}
               >
-                {characterClass || 'Select Class'}
-              </Button>
-            }
-            contentStyle={styles.menuContent}
+                {classes.map((characterClass) => (
+                  <Menu.Item
+                    key={characterClass.index}
+                    onPress={() => handleClassSelect(characterClass)}
+                    title={characterClass.name}
+                    titleStyle={{ color: theme.colors.onSurface }}
+                  />
+                ))}
+              </Menu>
+            </View>
+            
+            <TextInput
+              label="Level"
+              value={level}
+              onChangeText={setLevel}
+              mode="outlined"
+              style={styles.input}
+              keyboardType="number-pad"
+              textColor={theme.colors.onSurface}
+              outlineColor={theme.colors.primary}
+            />
+          </View>
+          
+          <Divider style={[styles.divider, { backgroundColor: theme.colors.outline }]} />
+          
+          <View style={styles.section}>
+            <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Ability Scores</Text>
+            
+            <View style={styles.abilityScoresContainer}>
+              <View style={styles.abilityScoreItem}>
+                <TextInput
+                  label="Strength"
+                  value={strength}
+                  onChangeText={setStrength}
+                  mode="outlined"
+                  style={styles.abilityScoreInput}
+                  keyboardType="number-pad"
+                  textColor={theme.colors.onSurface}
+                  outlineColor={theme.colors.primary}
+                />
+                <Text style={[styles.modifierText, { color: theme.colors.onSurface }]}>
+                  {Math.floor((parseInt(strength, 10) - 10) / 2)}
+                </Text>
+              </View>
+              
+              <View style={styles.abilityScoreItem}>
+                <TextInput
+                  label="Dexterity"
+                  value={dexterity}
+                  onChangeText={setDexterity}
+                  mode="outlined"
+                  style={styles.abilityScoreInput}
+                  keyboardType="number-pad"
+                  textColor={theme.colors.onSurface}
+                  outlineColor={theme.colors.primary}
+                />
+                <Text style={[styles.modifierText, { color: theme.colors.onSurface }]}>
+                  {Math.floor((parseInt(dexterity, 10) - 10) / 2)}
+                </Text>
+              </View>
+              
+              <View style={styles.abilityScoreItem}>
+                <TextInput
+                  label="Constitution"
+                  value={constitution}
+                  onChangeText={setConstitution}
+                  mode="outlined"
+                  style={styles.abilityScoreInput}
+                  keyboardType="number-pad"
+                  textColor={theme.colors.onSurface}
+                  outlineColor={theme.colors.primary}
+                />
+                <Text style={[styles.modifierText, { color: theme.colors.onSurface }]}>
+                  {Math.floor((parseInt(constitution, 10) - 10) / 2)}
+                </Text>
+              </View>
+              
+              <View style={styles.abilityScoreItem}>
+                <TextInput
+                  label="Intelligence"
+                  value={intelligence}
+                  onChangeText={setIntelligence}
+                  mode="outlined"
+                  style={styles.abilityScoreInput}
+                  keyboardType="number-pad"
+                  textColor={theme.colors.onSurface}
+                  outlineColor={theme.colors.primary}
+                />
+                <Text style={[styles.modifierText, { color: theme.colors.onSurface }]}>
+                  {Math.floor((parseInt(intelligence, 10) - 10) / 2)}
+                </Text>
+              </View>
+              
+              <View style={styles.abilityScoreItem}>
+                <TextInput
+                  label="Wisdom"
+                  value={wisdom}
+                  onChangeText={setWisdom}
+                  mode="outlined"
+                  style={styles.abilityScoreInput}
+                  keyboardType="number-pad"
+                  textColor={theme.colors.onSurface}
+                  outlineColor={theme.colors.primary}
+                />
+                <Text style={[styles.modifierText, { color: theme.colors.onSurface }]}>
+                  {Math.floor((parseInt(wisdom, 10) - 10) / 2)}
+                </Text>
+              </View>
+              
+              <View style={styles.abilityScoreItem}>
+                <TextInput
+                  label="Charisma"
+                  value={charisma}
+                  onChangeText={setCharisma}
+                  mode="outlined"
+                  style={styles.abilityScoreInput}
+                  keyboardType="number-pad"
+                  textColor={theme.colors.onSurface}
+                  outlineColor={theme.colors.primary}
+                />
+                <Text style={[styles.modifierText, { color: theme.colors.onSurface }]}>
+                  {Math.floor((parseInt(charisma, 10) - 10) / 2)}
+                </Text>
+              </View>
+            </View>
+          </View>
+          
+          <Divider style={[styles.divider, { backgroundColor: theme.colors.outline }]} />
+          
+          <View style={styles.section}>
+            <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Background</Text>
+            
+            <TextInput
+              label="Character Background"
+              value={background}
+              onChangeText={setBackground}
+              mode="outlined"
+              style={styles.input}
+              multiline
+              numberOfLines={4}
+              textColor={theme.colors.onSurface}
+              outlineColor={theme.colors.primary}
+            />
+          </View>
+          
+          <Button 
+            mode="contained" 
+            onPress={handleCreateCharacter}
+            style={[styles.button, { backgroundColor: theme.colors.primary }]}
           >
-            {classes.map((characterClass) => (
-              <Menu.Item
-                key={characterClass.index}
-                onPress={() => handleClassSelect(characterClass)}
-                title={characterClass.name}
-                titleStyle={styles.menuItemText}
-              />
-            ))}
-          </Menu>
-        </View>
-        
-        <TextInput
-          label="Level"
-          value={level}
-          onChangeText={setLevel}
-          mode="outlined"
-          style={styles.input}
-          keyboardType="number-pad"
-          textColor="#000000"
-          outlineColor="#4a4a9c"
-        />
+            Create Character
+          </Button>
+        </Surface>
       </View>
-      
-      <Divider style={styles.divider} />
-      
-      <View style={styles.section}>
-        <Text variant="titleMedium" style={styles.sectionTitle}>Ability Scores</Text>
-        
-        <View style={styles.abilityScoresContainer}>
-          <View style={styles.abilityScoreItem}>
-            <TextInput
-              label="Strength"
-              value={strength}
-              onChangeText={setStrength}
-              mode="outlined"
-              style={styles.abilityScoreInput}
-              keyboardType="number-pad"
-              textColor="#000000"
-              outlineColor="#4a4a9c"
-            />
-            <Text style={styles.modifierText}>
-              {Math.floor((parseInt(strength, 10) - 10) / 2)}
-            </Text>
-          </View>
-          
-          <View style={styles.abilityScoreItem}>
-            <TextInput
-              label="Dexterity"
-              value={dexterity}
-              onChangeText={setDexterity}
-              mode="outlined"
-              style={styles.abilityScoreInput}
-              keyboardType="number-pad"
-              textColor="#000000"
-              outlineColor="#4a4a9c"
-            />
-            <Text style={styles.modifierText}>
-              {Math.floor((parseInt(dexterity, 10) - 10) / 2)}
-            </Text>
-          </View>
-          
-          <View style={styles.abilityScoreItem}>
-            <TextInput
-              label="Constitution"
-              value={constitution}
-              onChangeText={setConstitution}
-              mode="outlined"
-              style={styles.abilityScoreInput}
-              keyboardType="number-pad"
-              textColor="#000000"
-              outlineColor="#4a4a9c"
-            />
-            <Text style={styles.modifierText}>
-              {Math.floor((parseInt(constitution, 10) - 10) / 2)}
-            </Text>
-          </View>
-          
-          <View style={styles.abilityScoreItem}>
-            <TextInput
-              label="Intelligence"
-              value={intelligence}
-              onChangeText={setIntelligence}
-              mode="outlined"
-              style={styles.abilityScoreInput}
-              keyboardType="number-pad"
-              textColor="#000000"
-              outlineColor="#4a4a9c"
-            />
-            <Text style={styles.modifierText}>
-              {Math.floor((parseInt(intelligence, 10) - 10) / 2)}
-            </Text>
-          </View>
-          
-          <View style={styles.abilityScoreItem}>
-            <TextInput
-              label="Wisdom"
-              value={wisdom}
-              onChangeText={setWisdom}
-              mode="outlined"
-              style={styles.abilityScoreInput}
-              keyboardType="number-pad"
-              textColor="#000000"
-              outlineColor="#4a4a9c"
-            />
-            <Text style={styles.modifierText}>
-              {Math.floor((parseInt(wisdom, 10) - 10) / 2)}
-            </Text>
-          </View>
-          
-          <View style={styles.abilityScoreItem}>
-            <TextInput
-              label="Charisma"
-              value={charisma}
-              onChangeText={setCharisma}
-              mode="outlined"
-              style={styles.abilityScoreInput}
-              keyboardType="number-pad"
-              textColor="#000000"
-              outlineColor="#4a4a9c"
-            />
-            <Text style={styles.modifierText}>
-              {Math.floor((parseInt(charisma, 10) - 10) / 2)}
-            </Text>
-          </View>
-        </View>
-      </View>
-      
-      <Divider style={styles.divider} />
-      
-      <View style={styles.section}>
-        <Text variant="titleMedium" style={styles.sectionTitle}>Background</Text>
-        
-        <TextInput
-          label="Character Background"
-          value={background}
-          onChangeText={setBackground}
-          mode="outlined"
-          style={styles.input}
-          multiline
-          numberOfLines={4}
-          textColor="#000000"
-          outlineColor="#4a4a9c"
-        />
-      </View>
-      
-      <Button 
-        mode="contained" 
-        onPress={handleCreateCharacter}
-        style={styles.button}
-      >
-        Create Character
-      </Button>
     </ScrollView>
   );
 };
 
+const { width } = Dimensions.get('window');
+const isDesktop = width >= 768;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+  },
+  contentContainer: {
+    width: isDesktop ? 600 : '100%',
+    alignSelf: 'center',
+  },
+  formContainer: {
     padding: 20,
+    margin: 16,
+    borderRadius: 12,
+    elevation: 4,
   },
   title: {
-    color: '#ffffff',
     marginBottom: 20,
     textAlign: 'center',
     fontWeight: 'bold',
@@ -492,17 +507,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    color: '#ffffff',
     marginBottom: 10,
     fontWeight: 'bold',
   },
   input: {
     marginBottom: 15,
-    backgroundColor: '#ffffff',
   },
   divider: {
     marginVertical: 20,
-    backgroundColor: '#444444',
   },
   abilityScoresContainer: {
     flexDirection: 'row',
@@ -516,10 +528,8 @@ const styles = StyleSheet.create({
   },
   abilityScoreInput: {
     width: '100%',
-    backgroundColor: '#ffffff',
   },
   modifierText: {
-    color: '#ffffff',
     marginTop: 5,
     fontSize: 16,
     fontWeight: 'bold',
@@ -527,7 +537,6 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 20,
     marginBottom: 40,
-    backgroundColor: '#4a4a9c',
   },
   menuContainer: {
     marginBottom: 16,
@@ -535,7 +544,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#ffffff',
     marginBottom: 8,
   },
   menuButton: {
@@ -543,8 +551,5 @@ const styles = StyleSheet.create({
   },
   menuContent: {
     backgroundColor: '#2a2a2a',
-  },
-  menuItemText: {
-    color: '#ffffff',
   },
 }); 

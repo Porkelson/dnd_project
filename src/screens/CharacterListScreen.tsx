@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { StyleSheet, View, FlatList, TouchableOpacity, RefreshControl, Dimensions } from 'react-native';
 import { Text, Card, FAB, IconButton, Divider, Button } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -108,52 +108,56 @@ export const CharacterListScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text variant="headlineMedium" style={styles.title}>Your Characters</Text>
-        <Button 
-          mode="contained-tonal" 
-          icon="refresh" 
-          onPress={onRefresh}
-          loading={refreshing}
-          style={styles.refreshButton}
-        >
-          Refresh
-        </Button>
-      </View>
-      
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <Text>Loading characters...</Text>
-        </View>
-      ) : characters.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>No characters yet</Text>
-          <Text style={styles.emptyStateSubtext}>Create your first character to get started</Text>
+      <View style={styles.contentContainer}>
+        <View style={styles.header}>
+          <Text variant="headlineMedium" style={styles.title}>Your Characters</Text>
           <Button 
-            mode="contained" 
-            icon="plus" 
-            onPress={() => navigation.navigate('CharacterCreation', {})}
-            style={styles.createButton}
+            mode="contained-tonal" 
+            icon="refresh" 
+            onPress={onRefresh}
+            loading={refreshing}
+            style={styles.refreshButton}
           >
-            Create Character
+            Refresh
           </Button>
         </View>
-      ) : (
-        <FlatList
-          data={characters}
-          renderItem={renderCharacterItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={['#4a4a9c']}
-              tintColor="#4a4a9c"
+        
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <Text>Loading characters...</Text>
+          </View>
+        ) : characters.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>No characters yet</Text>
+            <Text style={styles.emptyStateSubtext}>Create your first character to get started</Text>
+            <Button 
+              mode="contained" 
+              icon="plus" 
+              onPress={() => navigation.navigate('CharacterCreation', {})}
+              style={styles.createButton}
+            >
+              Create Character
+            </Button>
+          </View>
+        ) : (
+          <View style={styles.listContainer}>
+            <FlatList
+              data={characters}
+              renderItem={renderCharacterItem}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.listContent}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  colors={['#4a4a9c']}
+                  tintColor="#4a4a9c"
+                />
+              }
             />
-          }
-        />
-      )}
+          </View>
+        )}
+      </View>
       
       <FAB
         icon="plus"
@@ -164,11 +168,18 @@ export const CharacterListScreen = () => {
   );
 };
 
+const { width } = Dimensions.get('window');
+const isDesktop = width >= 768;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1a1a1a',
+  },
+  contentContainer: {
+    width: isDesktop ? 600 : '100%',
     padding: 20,
+    alignSelf: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -180,6 +191,9 @@ const styles = StyleSheet.create({
   title: {
     color: '#ffffff',
     fontWeight: 'bold',
+  },
+  listContainer: {
+    width: '100%',
   },
   listContent: {
     paddingBottom: 20,

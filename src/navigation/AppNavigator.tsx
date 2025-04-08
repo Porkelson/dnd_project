@@ -9,6 +9,7 @@ import { CharacterListScreen } from '../screens/CharacterListScreen';
 import { CampaignScreen } from '../screens/CampaignScreen';
 import { GameScreen } from '../screens/GameScreen';
 import { GameplayScreen } from '../screens/GameplayScreen';
+import { AdventureScreen } from '../screens/AdventureScreen';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -20,6 +21,7 @@ export type RootStackParamList = {
   Campaign: undefined;
   Game: { campaignId: string };
   Gameplay: undefined;
+  Adventure: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -81,6 +83,17 @@ export const AppNavigator = () => {
           component={GameplayScreen}
           options={{
             title: 'Gameplay Tools',
+            headerStyle: {
+              backgroundColor: '#1a1a1a',
+            },
+            headerTintColor: '#ffffff',
+          }}
+        />
+        <Stack.Screen
+          name="Adventure"
+          component={AdventureScreen}
+          options={{
+            title: 'Adventure',
             headerStyle: {
               backgroundColor: '#1a1a1a',
             },

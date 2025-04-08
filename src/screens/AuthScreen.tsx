@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Dimensions } from 'react-native';
 import { Text, TextInput, Button, Surface, useTheme, Divider } from 'react-native-paper';
 import { registerUser, signInUser } from '../services/authService';
 
@@ -100,16 +100,22 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
   );
 };
 
+const { width } = Dimensions.get('window');
+const isDesktop = width >= 768;
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
+    alignItems: 'center',
   },
   surface: {
     padding: 20,
     borderRadius: 10,
     elevation: 4,
+    width: isDesktop ? 400 : '100%',
+    maxWidth: '100%',
   },
   title: {
     fontSize: 24,

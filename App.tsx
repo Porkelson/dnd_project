@@ -11,6 +11,7 @@ import { CharacterDetailsScreen } from './src/screens/CharacterDetailsScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { GameplayScreen } from './src/screens/GameplayScreen';
+import { AdventureScreen } from './src/screens/AdventureScreen';
 import { getCurrentUser, onAuthStateChange } from './src/services/authService';
 
 type TabParamList = {
@@ -19,6 +20,7 @@ type TabParamList = {
   'Character Details': { characterId?: string };
   'Gameplay Tools': undefined;
   Test: undefined;
+  Adventure: undefined;
 };
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
@@ -96,6 +98,8 @@ export default function App() {
                 iconName = focused ? 'account-details' : 'account-details-outline';
               } else if (route.name === 'Gameplay Tools') {
                 iconName = focused ? 'dice-d20' : 'dice-d20-outline';
+              } else if (route.name === 'Adventure') {
+                iconName = focused ? 'map-marker' : 'map-marker-outline';
               } else {
                 iconName = focused ? 'test-tube' : 'test-tube-empty';
               }
@@ -125,6 +129,11 @@ export default function App() {
             name="Gameplay Tools" 
             component={GameplayScreen}
             options={{ title: 'Gameplay' }}
+          />
+          <TabScreen 
+            name="Adventure" 
+            component={AdventureScreen}
+            options={{ title: 'Adventure' }}
           />
           <TabScreen 
             name="Test" 

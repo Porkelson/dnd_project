@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { Text, Surface, useTheme } from 'react-native-paper';
 import { FirebaseTest } from '../components/FirebaseTest';
 
@@ -8,26 +8,35 @@ export const TestScreen: React.FC = () => {
   
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Surface style={styles.headerContainer}>
-        <Text style={[styles.header, { color: theme.colors.primary }]}>
-          Firebase Persistence Testing
-        </Text>
-        <Text style={[styles.description, { color: theme.colors.onSurface }]}>
-          Use this screen to test the Firebase persistence functionality. 
-          Create, read, update, and delete characters to verify that data is properly stored in Firestore.
-        </Text>
-      </Surface>
-      
-      <Surface style={styles.testContainer}>
-        <FirebaseTest />
-      </Surface>
+      <View style={styles.contentContainer}>
+        <Surface style={styles.headerContainer}>
+          <Text style={[styles.header, { color: theme.colors.primary }]}>
+            Firebase Persistence Testing
+          </Text>
+          <Text style={[styles.description, { color: theme.colors.onSurface }]}>
+            Use this screen to test the Firebase persistence functionality. 
+            Create, read, update, and delete characters to verify that data is properly stored in Firestore.
+          </Text>
+        </Surface>
+        
+        <Surface style={styles.testContainer}>
+          <FirebaseTest />
+        </Surface>
+      </View>
     </ScrollView>
   );
 };
 
+const { width } = Dimensions.get('window');
+const isDesktop = width >= 768;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  contentContainer: {
+    width: isDesktop ? 600 : '100%',
+    alignSelf: 'center',
   },
   headerContainer: {
     padding: 20,

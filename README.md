@@ -136,4 +136,112 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - D&D 5E API for providing game data
 - OpenAI for AI capabilities
-- The D&D community for inspiration and feedback 
+- The D&D community for inspiration and feedback
+
+# D&D Chat - Event System
+
+A TypeScript-based event system for a D&D-inspired mobile app in React Native.
+
+## Overview
+
+The event system provides a framework for creating dynamic, interactive adventures in a D&D-inspired mobile app. It includes:
+
+- Event definition and management
+- Player state tracking
+- Dynamic event filtering based on player state
+- AI-powered event descriptions
+- Choice-based gameplay
+
+## Event Structure
+
+Each event is an object with the following properties:
+
+```typescript
+interface AdventureEvent {
+  id: string;
+  title: string;
+  type: 'exploration' | 'combat' | 'social' | 'puzzle' | 'treasure';
+  choices: string[];
+  requires: string[];
+  grants: string[];
+  prompt: string;
+}
+```
+
+- `id`: Unique identifier for the event
+- `title`: Display name of the event
+- `type`: Category of the event (exploration, combat, social, puzzle, treasure)
+- `choices`: Array of options available to the player
+- `requires`: Array of player state tags required to unlock this event
+- `grants`: Array of player state tags granted when this event is completed
+- `prompt`: Text prompt used to generate a dynamic description with AI
+
+## Player State
+
+The player state is tracked as a collection of tags and stats:
+
+```typescript
+interface PlayerState {
+  tags: string[];
+  inventory: string[];
+  stats: {
+    health: number;
+    maxHealth: number;
+    gold: number;
+    experience: number;
+    level: number;
+  };
+}
+```
+
+## How It Works
+
+1. **Event Filtering**: Events are filtered based on the player's current state tags
+2. **Random Selection**: A random eligible event is selected for the player
+3. **Dynamic Description**: The event description is generated using AI based on the event prompt and player state
+4. **Choice Processing**: Player choices are processed, updating the player state
+5. **Outcome Generation**: Outcomes are generated based on the player's choices
+
+## Example Event
+
+```typescript
+const event: AdventureEvent = {
+  id: "ancient_tower",
+  title: "Ancient Tower",
+  type: "exploration",
+  choices: ["Enter", "Inspect the surroundings", "Leave"],
+  requires: [],
+  grants: ["found_tower_key"],
+  prompt: "Describe an abandoned tower filled with magical vines and old artifacts."
+};
+```
+
+## Integration with OpenAI
+
+The system is designed to integrate with OpenAI's API to generate dynamic, contextual descriptions for events. The integration is currently mocked but can be easily connected to the actual OpenAI API.
+
+## Getting Started
+
+1. Install dependencies:
+   ```
+   npm install
+   ```
+
+2. Set up environment variables:
+   Create a `.env` file with your OpenAI API key:
+   ```
+   OPENAI_API_KEY=your_api_key_here
+   ```
+
+3. Run the app:
+   ```
+   npm start
+   ```
+
+## Future Enhancements
+
+- Persistent player state storage
+- More complex event chains and branching narratives
+- Integration with character creation and progression
+- Multiplayer support for collaborative adventures
+- Expanded AI capabilities for more dynamic storytelling 
