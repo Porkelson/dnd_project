@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
-import { Text, TextInput, Button, SegmentedButtons, Divider, Menu } from 'react-native-paper';
+import { Text, TextInput, Button, SegmentedButtons, Divider, Menu, Portal, Modal } from 'react-native-paper';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
+import { dndApi, ApiReference, Race, Class } from '../services/dndApi';
 
 type CharacterCreationScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type CharacterCreationScreenRouteProp = RouteProp<RootStackParamList, 'CharacterCreation'>;
@@ -38,7 +39,11 @@ const CLASSES = [
   'Wizard',
 ];
 
-export const CharacterCreationScreen = () => {
+interface CharacterCreationScreenProps {
+  onCharacterCreated?: (character: any) => void;
+}
+
+export const CharacterCreationScreen: React.FC<CharacterCreationScreenProps> = ({ onCharacterCreated }) => {
   const navigation = useNavigation<CharacterCreationScreenNavigationProp>();
   const route = useRoute<CharacterCreationScreenRouteProp>();
   const characterId = route.params?.characterId;
@@ -63,6 +68,14 @@ export const CharacterCreationScreen = () => {
   
   // Background
   const [background, setBackground] = useState('');
+  
+  // Race selection
+  const [races, setRaces] = useState<ApiReference[]>([]);
+  const [selectedRaceDetails, setSelectedRaceDetails] = useState<Race | null>(null);
+  
+  // Class selection
+  const [classes, setClasses] = useState<ApiReference[]>([]);
+  const [selectedClassDetails, setSelectedClassDetails] = useState<Class | null>(null);
   
   // Reset form when screen is focused
   useFocusEffect(
@@ -110,13 +123,79 @@ export const CharacterCreationScreen = () => {
     setBackground('A noble ranger from the North.');
   };
   
+  useEffect(() => {
+    // Load races and classes from the API
+    const loadData = async () => {
+      try {
+        const [racesResponse, classesResponse] = await Promise.all([
+          dndApi.getRaces(),
+          dndApi.getClasses()
+        ]);
+        setRaces(racesResponse.results);
+        setClasses(classesResponse.results);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    };
+    
+    loadData();
+  }, []);
+
+  const handleRaceSelect = async (race: ApiReference) => {
+    setRace(race.name);
+    setRaceMenuVisible(false);
+    
+    try {
+      const raceDetails = await dndApi.getRace(race.index);
+      setSelectedRaceDetails(raceDetails);
+      
+      // Apply ability score bonuses
+      raceDetails.ability_bonuses.forEach(bonus => {
+        const abilityName = bonus.ability_score.name.toLowerCase();
+        switch (abilityName) {
+          case 'strength':
+            setStrength(prev => (parseInt(prev) + bonus.bonus).toString());
+            break;
+          case 'dexterity':
+            setDexterity(prev => (parseInt(prev) + bonus.bonus).toString());
+            break;
+          case 'constitution':
+            setConstitution(prev => (parseInt(prev) + bonus.bonus).toString());
+            break;
+          case 'intelligence':
+            setIntelligence(prev => (parseInt(prev) + bonus.bonus).toString());
+            break;
+          case 'wisdom':
+            setWisdom(prev => (parseInt(prev) + bonus.bonus).toString());
+            break;
+          case 'charisma':
+            setCharisma(prev => (parseInt(prev) + bonus.bonus).toString());
+            break;
+        }
+      });
+    } catch (error) {
+      console.error('Error loading race details:', error);
+    }
+  };
+
+  const handleClassSelect = async (characterClass: ApiReference) => {
+    setCharacterClass(characterClass.name);
+    setClassMenuVisible(false);
+    
+    try {
+      const classDetails = await dndApi.getClass(characterClass.index);
+      setSelectedClassDetails(classDetails);
+    } catch (error) {
+      console.error('Error loading class details:', error);
+    }
+  };
+
   const handleCreateCharacter = () => {
-    // TODO: Save character to database
     const character = {
       id: characterId || Date.now().toString(), // Generate a new ID if creating a new character
       name,
-      race,
-      class: characterClass,
+      race: selectedRaceDetails,
+      class: selectedClassDetails,
       level: parseInt(level, 10),
       abilityScores: {
         strength: parseInt(strength, 10),
@@ -127,9 +206,12 @@ export const CharacterCreationScreen = () => {
         charisma: parseInt(charisma, 10),
       },
       background,
+      raceDetails: selectedRaceDetails,
+      classDetails: selectedClassDetails,
     };
     
     console.log('Character saved:', character);
+    onCharacterCreated?.(character);
     navigation.navigate('CharacterList');
   };
   
@@ -152,65 +234,61 @@ export const CharacterCreationScreen = () => {
           outlineColor="#4a4a9c"
         />
         
-        <Menu
-          visible={raceMenuVisible}
-          onDismiss={() => setRaceMenuVisible(false)}
-          anchor={
-            <TextInput
-              label="Race"
-              value={race}
-              mode="outlined"
-              style={styles.input}
-              right={<TextInput.Icon icon="menu-down" onPress={() => setRaceMenuVisible(true)} />}
-              textColor="#000000"
-              outlineColor="#4a4a9c"
-              editable={false}
-            />
-          }
-          contentStyle={{ backgroundColor: '#2a2a2a' }}
-        >
-          {RACES.map((r) => (
-            <Menu.Item 
-              key={r} 
-              onPress={() => {
-                setRace(r);
-                setRaceMenuVisible(false);
-              }} 
-              title={r}
-              titleStyle={{ color: '#ffffff' }}
-            />
-          ))}
-        </Menu>
+        <View style={styles.menuContainer}>
+          <Text style={styles.label}>Race</Text>
+          <Menu
+            visible={raceMenuVisible}
+            onDismiss={() => setRaceMenuVisible(false)}
+            anchor={
+              <Button
+                mode="outlined"
+                onPress={() => setRaceMenuVisible(true)}
+                style={styles.menuButton}
+                textColor="#ffffff"
+              >
+                {race || 'Select Race'}
+              </Button>
+            }
+            contentStyle={styles.menuContent}
+          >
+            {races.map((race) => (
+              <Menu.Item
+                key={race.index}
+                onPress={() => handleRaceSelect(race)}
+                title={race.name}
+                titleStyle={styles.menuItemText}
+              />
+            ))}
+          </Menu>
+        </View>
         
-        <Menu
-          visible={classMenuVisible}
-          onDismiss={() => setClassMenuVisible(false)}
-          anchor={
-            <TextInput
-              label="Class"
-              value={characterClass}
-              mode="outlined"
-              style={styles.input}
-              right={<TextInput.Icon icon="menu-down" onPress={() => setClassMenuVisible(true)} />}
-              textColor="#000000"
-              outlineColor="#4a4a9c"
-              editable={false}
-            />
-          }
-          contentStyle={{ backgroundColor: '#2a2a2a' }}
-        >
-          {CLASSES.map((c) => (
-            <Menu.Item 
-              key={c} 
-              onPress={() => {
-                setCharacterClass(c);
-                setClassMenuVisible(false);
-              }} 
-              title={c}
-              titleStyle={{ color: '#ffffff' }}
-            />
-          ))}
-        </Menu>
+        <View style={styles.menuContainer}>
+          <Text style={styles.label}>Class</Text>
+          <Menu
+            visible={classMenuVisible}
+            onDismiss={() => setClassMenuVisible(false)}
+            anchor={
+              <Button
+                mode="outlined"
+                onPress={() => setClassMenuVisible(true)}
+                style={styles.menuButton}
+                textColor="#ffffff"
+              >
+                {characterClass || 'Select Class'}
+              </Button>
+            }
+            contentStyle={styles.menuContent}
+          >
+            {classes.map((characterClass) => (
+              <Menu.Item
+                key={characterClass.index}
+                onPress={() => handleClassSelect(characterClass)}
+                title={characterClass.name}
+                titleStyle={styles.menuItemText}
+              />
+            ))}
+          </Menu>
+        </View>
         
         <TextInput
           label="Level"
@@ -409,5 +487,23 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 40,
     backgroundColor: '#4a4a9c',
+  },
+  menuContainer: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 8,
+  },
+  menuButton: {
+    borderColor: '#4a4a9c',
+  },
+  menuContent: {
+    backgroundColor: '#2a2a2a',
+  },
+  menuItemText: {
+    color: '#ffffff',
   },
 }); 

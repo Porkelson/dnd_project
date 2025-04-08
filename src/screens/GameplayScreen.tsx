@@ -1,41 +1,44 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, SegmentedButtons } from 'react-native-paper';
+import { View, StyleSheet } from 'react-native';
+import { SegmentedButtons } from 'react-native-paper';
 import { DiceRoller } from '../components/DiceRoller';
 import { InitiativeTracker } from '../components/InitiativeTracker';
 import { CombatLog } from '../components/CombatLog';
+import { SpellBook } from '../components/SpellBook';
 
-export const GameplayScreen = () => {
-  const [activeTab, setActiveTab] = useState('dice');
+export const GameplayScreen: React.FC = () => {
+  const [selectedTab, setSelectedTab] = useState('dice');
 
-  const handleDiceRoll = (result: number, diceType: number) => {
-    console.log(`Rolled d${diceType}: ${result}`);
-    // Here you could add the roll to the combat log
+  const renderContent = () => {
+    switch (selectedTab) {
+      case 'dice':
+        return <DiceRoller />;
+      case 'initiative':
+        return <InitiativeTracker />;
+      case 'combat':
+        return <CombatLog />;
+      case 'spells':
+        return <SpellBook />;
+      default:
+        return <DiceRoller />;
+    }
   };
 
   return (
     <View style={styles.container}>
       <SegmentedButtons
-        value={activeTab}
-        onValueChange={setActiveTab}
+        value={selectedTab}
+        onValueChange={setSelectedTab}
         buttons={[
           { value: 'dice', label: 'Dice' },
           { value: 'initiative', label: 'Initiative' },
           { value: 'combat', label: 'Combat Log' },
+          { value: 'spells', label: 'Spellbook' },
         ]}
         style={styles.segmentedButtons}
       />
-
       <View style={styles.content}>
-        {activeTab === 'dice' && (
-          <DiceRoller onRoll={handleDiceRoll} />
-        )}
-        {activeTab === 'initiative' && (
-          <InitiativeTracker />
-        )}
-        {activeTab === 'combat' && (
-          <CombatLog />
-        )}
+        {renderContent()}
       </View>
     </View>
   );
@@ -48,6 +51,7 @@ const styles = StyleSheet.create({
   },
   segmentedButtons: {
     margin: 16,
+    backgroundColor: '#2a2a2a',
   },
   content: {
     flex: 1,
